@@ -1,3 +1,7 @@
+" Author: Chris Aumann <me@chr4.org>
+" Version: 1.0.0
+" Description: Plugin that marks insecure SSL/TLS cipher-suites and protocol options as errors.
+
 if exists('g:loaded_sslsecure')
   finish
 endif
