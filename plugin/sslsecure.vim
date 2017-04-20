@@ -1,3 +1,8 @@
+if exists('g:loaded_sslsecure')
+  finish
+endif
+let g:loaded_sslsecure = 1
+
 " Mark insecure SSL Ciphers (Note: List might not not complete)
 " Reference: https://www.openssl.org/docs/man1.0.2/apps/ciphers.html
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('Error', '\ccipher.*\C[^!]\zsSSLv3', 1)
