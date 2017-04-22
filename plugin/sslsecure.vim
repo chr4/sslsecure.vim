@@ -116,12 +116,12 @@ let s:protocol = '\(TLS\|tls\|SSL\|ssl\)[\._-]\?\([Pp]rotocol\|[Oo]ption\).*'
 
 " Check for insecure protocols after keywords that could specify TLS/ SSL protocols
 " TODO: -SSLv3 is highlighted from insecureSSLCipher rules above (Apache notation)
-autocmd BufWinEnter * let w:insecureSSLProtocol=matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv2')
-autocmd BufWinEnter * let w:insecureSSLProtocol=matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv3')
+autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv2')
+autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv3')
 
 " TLSv1 is vulnerable to the BEAST attack. Should be disabled if possible.
 " TODO: TLSv1.0 is not matched yet
-" autocmd BufWinEnter * let w:insecureSSLProtocol=matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cTLSv1\ze[^\.]')
+" autocmd BufWinEnter * cal matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cTLSv1\ze[^\.]')
 
 
 " Highlight both groups as errors
