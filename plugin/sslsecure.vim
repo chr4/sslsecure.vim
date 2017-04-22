@@ -10,7 +10,7 @@ let g:loaded_sslsecure = 1
 
 let s:pre = '\([:_-]\zs'
 let s:mid = '\|\([^!]\|^\)\zs'
-let s:post = '\ze[:_-]\)'
+let s:post = '\ze[:_-]\S\)'
 
 " Mark insecure SSL Ciphers (Note: List might not not complete)
 " Reference: https://www.openssl.org/docs/man1.0.2/apps/ciphers.html
