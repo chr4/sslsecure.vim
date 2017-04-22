@@ -9,7 +9,19 @@ let g:loaded_sslsecure = 1
 
 
 let s:pre = '\([:_-]\zs'
+
+let s:eop = '\ze'
+
+fun! s:eop(pattern)
+  return '\ze\(' . a:pattern . '\|$\)'
+endfun
+
 let s:mid = '\|\([^!]\|^\)\zs'
+
+fun! s:mid(exclude)
+  return '\|\([^!' . a:exclude . ']\|^\)\zs'
+endfun
+
 let s:post = '\ze[:_-]\S\)'
 
 " Mark insecure SSL Ciphers (Note: List might not not complete)
@@ -24,35 +36,35 @@ autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pr
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'ALL' . s:mid . 'ALL' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'COMPLEMENTOFALL' . s:mid . 'COMPLEMENTOFALL' . s:post)
 
-autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'SHA\ze\(\D\|$\)' . s:mid . 'SHA' . s:post) " Match SHA without matching SHA256+
-autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'SHA1\ze' . s:mid . 'SHA1' . s:post)
+autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'SHA' . s:eop('\D') . s:mid . 'SHA' . s:post) " Match SHA without matching SHA256+
+autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'SHA1' . s:eop . s:mid . 'SHA1' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'MD5' . s:mid . 'MD5' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'RC2' . s:mid . 'RC2' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'RC4' . s:mid . 'RC4' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . '3DES' . s:mid . '3DES' . s:post)
-autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'DES\|\([^!3]\|^\)\zsDES' . s:post)
+autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'DES' . s:mid('3') . 'DES' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'aDSS' . s:mid . 'aDSS' . s:post)
-autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'DSS\|\([^!a]\|^\)\zsDSS' . s:post)
+autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'DSS' . s:mid('a') . 'DSS' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'PSK' . s:mid . 'PSK' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'IDEA' . s:mid . 'IDEA' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'SEED' . s:mid . 'SEED' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'EXP\w*' . s:mid . 'EXP\w*' . s:post) " Match all EXPORT ciphers
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'aGOST\w*' . s:mid . 'aGOST\w*' . s:post) " Match all GOST ciphers
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'kGOST\w*' . s:mid . 'kGOST\w*' . s:post)
-autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'GOST\w*\|\([^!ak]\|^\)\zsGOST\w*' . s:post)
+autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'GOST\w*' . s:mid('ak') . 'GOST\w*' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . '[kae]\?FZA' . s:mid . '[kae]\?FZA' . s:post) " Not implemented ciphers
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'ECB' . s:mid . 'ECB' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . '[aes]NULL' . s:mid . '[aes]NULL' . s:post)
 
 " Anonymous cipher suites should never be used
-autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'DH\ze\([^E]\|$\)\|\([^!ECa]\|^\)\zsDH' . s:post) " Try to match DH without DHE, EDH, EECDH, etc.
-autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'ECDH\ze\([^E]\|$\)\|\([^!EA]\|^\)\zsECDH' . s:post) " Do not match EECDH, ECDHE
+autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'DH' . s:eop('[^E]') . s:mid('ECa') . 'DH' . s:post) " Try to match DH without DHE, EDH, EECDH, etc.
+autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'ECDH' . s:eop('[^E]') . s:mid('EA') . 'ECDH' . s:post) " Do not match EECDH, ECDHE
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'ADH' . s:mid . 'ADH' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'kDHE' . s:mid . 'kDHE' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'kEDH' . s:mid . 'kEDH' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'kECDHE' . s:mid . 'kECDHE' . s:post)
 autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'kEECDH' . s:mid . 'kEECDH' . s:post)
-autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'AECDH\|\([^!E]\|^\)\zsAECDH' . s:post)
+autocmd BufWinEnter * let w:insecureSSLCipher=matchadd('insecureSSLCipher', s:pre . 'AECDH' . s:mid('[^E]') . 'AECDH' . s:post)
 
 
 " Protocol matching condition
