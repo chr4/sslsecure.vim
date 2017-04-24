@@ -70,10 +70,11 @@ autocmd BufWinEnter * call s:genmatch('kGOST[0-9A-Za-z]*', '', '')
 autocmd BufWinEnter * call s:genmatch('GOST[0-9A-Za-z]*', '', 'ak')
 autocmd BufWinEnter * call s:genmatch('[kae]\?FZA', '', '')
 autocmd BufWinEnter * call s:genmatch('ECB', '', '')
-autocmd BufWinEnter * call s:genmatch('[aes]NULL', '', '')
+autocmd BufWinEnter * call s:genmatch('[aes]\?NULL', '', '')
 
 " Anonymous cipher suites should never be used
-autocmd BufWinEnter * call s:genmatch('DH', '[^E]', 'ECa') " Try to match DH without DHE, EDH, EECDH, etc.
+autocmd BufWinEnter * call s:genmatch('anon', '', '')       " Keyword used by e.g. rustls
+autocmd BufWinEnter * call s:genmatch('DH', '[^E]', 'ECa')  " Try to match DH without DHE, EDH, EECDH, etc.
 autocmd BufWinEnter * call s:genmatch('ECDH', '[^E]', 'EA') " Do not match EECDH, ECDHE
 autocmd BufWinEnter * call s:genmatch('ADH', '', '')
 autocmd BufWinEnter * call s:genmatch('kDHE', '', '')
