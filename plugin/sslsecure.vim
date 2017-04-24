@@ -94,6 +94,9 @@ autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\z
 " Golang uses `MinVersion: tls.VersionSSL30`
 autocmd BufWinEnter * call matchadd('insecureSSLProtocol', 'tls\.\zsVersionSSL30')
 
+" HAProxy bind option
+autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '\zsforce-sslv3')
+
 " TLSv1 is vulnerable to the BEAST attack. Should be disabled if possible.
 " TODO: TLSv1.0 is not matched yet
 " autocmd BufWinEnter * cal matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cTLSv1\ze[^\.]')
