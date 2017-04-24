@@ -91,6 +91,9 @@ let s:protocol = '\v(TLS|tls|SSL|ssl)[A-Za-z0-9\._-]*([Pp]rotocol|[Oo]ption)\m.*
 autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv2')
 autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv3')
 
+" Golang uses `MinVersion: tls.VersionSSL30`
+autocmd BufWinEnter * call matchadd('insecureSSLProtocol', 'tls\.\zsVersionSSL30')
+
 " TLSv1 is vulnerable to the BEAST attack. Should be disabled if possible.
 " TODO: TLSv1.0 is not matched yet
 " autocmd BufWinEnter * cal matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cTLSv1\ze[^\.]')
