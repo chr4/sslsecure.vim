@@ -8,63 +8,35 @@ endif
 let g:loaded_sslsecure = 1
 
 
-" Try to detect cipher suite strings.
-" 1. Open bracket to match keywords with both, pre- and appended delimiters
-" 2. Look for one of those delimiters: :_-
-"    When the keyword follows the delimiter directly, this means it can't be negated with an !
-" 3. When found, highlight the keyword in the next pattern
-let s:pre = '\([:_-]\zs'
-
-" Sometimes it's necessary to add additional conditions to describe a keyword's end-pattern.
-" The end-of-pattern function ends highlighting of the keyword, but makes sure either end-of-line or
-" a special pattern follows the keyword.
+" Define beginning and ending patterns. Besides beginning and end of line:
+" Whitespaces, quotes, comma, dot, semicolon, brackets
+" Note: colon and underscore are used by the cipherstrings!
 "
-" Example:
-" Make sure that the SHA keyword only triggers when a non-digit follows.
-" This prevents highlighting of more secure SHA ciphers like SHA256 or SHA512
-"
-"     s:genmatch('SHA', '\D', '')
-fun! s:eop(pattern)
-  " If no pattern is given, just return an empty string
-  if empty(a:pattern)
-    return '\ze'
-  endif
-
-  return '\ze\(' . a:pattern . '\|$\)'
-endfun
-
-" Cipher suites are detected if a keyword either has a prepended or appended delimiter.
-" To match both cases, we need to construct a (:xxx|xxx:) matching pattern.
-" The mid() function generates those.
-"
-" 1. Seperate the :xxx and xxx: pattern using a |
-" 2. Do not highlight when keyword is negated with a !
-" 3. Do not highlight keyword at the beginning of line, so prose like this is unaffected:
-"    "SHA: An insecure cipher."
-" 4. Start highlighting the next keyword
-"
-" In some cases, it's necessary to exclude certian matches on the xxx: side of the pattern.
-"
-" Example:
-" Ensure that the DES within !3DES isn't highlighted
-"
-"     s:genmatch('3DES', '', '')
-"     s:genmatch('DES', '', '3')
-fun! s:mid(exclude)
-  return '\|\([^!' . a:exclude . ']\|^\)\zs'
-endfun
-
-" 1. Look for a keyword that ends with one of these delimiters :_-
-" 2. End highlighting.
-" 3. Cipher suites never end with a delimiter, therefore make sure a non-whitespace character follows
-" 4. Close the bracket to match keywords with both, pre- and appended delimiters
-let s:post = '\ze[:_-]\S\)'
-
+" TODO: Prevent :MD5 from being highlighted in prose.
+"       This can be achieved by removing \s (and maybe $) from the s:end,
+"       but might result in other cipher strings being missed.
+let s:begin = "\\v(^|\\s|'|\"|,|\\.|;|\\{|\\[|\\()\\m"
+let s:end   = "\\v($|\\s|'|\"|,|\\.|;|\\}|\\]|\\))\\m"
+let s:delimiter = '[:+_-]'
 
 " This function highlights a keyword according to the rules specified above
-function s:genmatch(keyword, eop, mid)
-  " Simplified version of the generated pattern: (:keyword|keyword:)
-  call matchadd('insecureSSLProtocol', s:pre . a:keyword . s:eop(a:eop) . s:mid(a:mid) . a:keyword . s:post)
+function s:genmatch(keyword, eop, exclude)
+  " _DES :+DES :DES
+  call matchadd('insecureSSLProtocol', '\v(_|:\+?)\m\zs' . a:keyword . '\ze' . '\(' . s:delimiter . '\|' . s:end . '\)')
+
+  " MD5-SHA: but do not highlight !MD5-SHA: (at the beginning of a suite)
+  call matchadd('insecureSSLProtocol', s:begin . '[^!]\([0-9A-Za-z]\+[+-]\)\+\zs' . a:keyword . '\ze' . s:delimiter)
+
+  " Match :AES128-SHA: and :AES128+SHA: (in the middle of pattern)
+  call matchadd('insecureSSLProtocol', ':\([0-9A-Za-z]\+[+-]\)\+\zs' . a:keyword . '\ze' . s:delimiter . '\S')
+
+  " :AES-SHA or :AES-CBC-MD5 (at the end of suite)
+  " Do not allow alpha-numeric characters before s:end, to match '-SHA";' and others properly.
+  call matchadd('insecureSSLProtocol', ':\([0-9A-Za-z]\+[+-]\)\+\zs' . a:keyword . '\ze' . '[^0-9A-Za-z]*' . s:end)
+
+  " ^keyword, "keyword, 'keyword
+  " Checks for \S at the end, so "SHA: " is not highlighted in prose text.
+  call matchadd('insecureSSLProtocol', s:begin . '\zs' . a:keyword . '\ze' . s:delimiter . '\S')
 endfunction
 
 
@@ -92,10 +64,10 @@ autocmd BufWinEnter * call s:genmatch('DSS', '', 'a')
 autocmd BufWinEnter * call s:genmatch('PSK', '', '')
 autocmd BufWinEnter * call s:genmatch('IDEA', '', '')
 autocmd BufWinEnter * call s:genmatch('SEED', '', '')
-autocmd BufWinEnter * call s:genmatch('EXP\w*', '', '')
-autocmd BufWinEnter * call s:genmatch('aGOST\w*', '', '')
-autocmd BufWinEnter * call s:genmatch('kGOST\w*', '', '')
-autocmd BufWinEnter * call s:genmatch('GOST\w*', '', 'ak')
+autocmd BufWinEnter * call s:genmatch('EXP[0-9A-Za-z]*', '', '')
+autocmd BufWinEnter * call s:genmatch('aGOST[0-9A-Za-z]*', '', '')
+autocmd BufWinEnter * call s:genmatch('kGOST[0-9A-Za-z]*', '', '')
+autocmd BufWinEnter * call s:genmatch('GOST[0-9A-Za-z]*', '', 'ak')
 autocmd BufWinEnter * call s:genmatch('[kae]\?FZA', '', '')
 autocmd BufWinEnter * call s:genmatch('ECB', '', '')
 autocmd BufWinEnter * call s:genmatch('[aes]NULL', '', '')
@@ -115,7 +87,6 @@ autocmd BufWinEnter * call s:genmatch('AECDH', '', '[^E]')
 let s:protocol = '\(TLS\|tls\|SSL\|ssl\)[\._-]\?\([Pp]rotocol\|[Oo]ption\).*'
 
 " Check for insecure protocols after keywords that could specify TLS/ SSL protocols
-" TODO: -SSLv3 is highlighted from insecureSSLCipher rules above (Apache notation)
 autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv2')
 autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv3')
 
