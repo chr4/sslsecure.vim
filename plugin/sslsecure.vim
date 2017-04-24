@@ -84,7 +84,7 @@ autocmd BufWinEnter * call s:genmatch('AECDH', '', '[^E]')
 
 
 " Protocol matching condition
-let s:protocol = '\(TLS\|tls\|SSL\|ssl\)[\._-]\?\([Pp]rotocol\|[Oo]ption\).*'
+let s:protocol = '\v(TLS|tls|SSL|ssl)[A-Za-z0-9\._-]*([Pp]rotocol|[Oo]ption)\m.*'
 
 " Check for insecure protocols after keywords that could specify TLS/ SSL protocols
 autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv2')
