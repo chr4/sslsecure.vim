@@ -97,3 +97,8 @@ call dein#add('chr4/sslsecure.vim')
 " Vundle
 Plugin 'chr4/sslsecure.vim'
 ```
+
+
+### Archlinux
+
+There's also an [AUR](https://aur.archlinux.org/packages/vim-sslsecure/) for Archlinux available, which is maintained by [Christian Rebischke](https://github.com/shibumi)
