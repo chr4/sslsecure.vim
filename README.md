@@ -98,6 +98,7 @@ call dein#add('chr4/sslsecure.vim')
 Plugin 'chr4/sslsecure.vim'
 ```
 
+Note that sslsecure.vim require Vim 7.3 or greater.
 
 ### Archlinux
 
