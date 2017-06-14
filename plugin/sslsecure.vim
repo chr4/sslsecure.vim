@@ -24,18 +24,18 @@ function s:genmatch(keyword, eop, exclude)
   " _DES :+DES :DES
   call matchadd('insecureSSLProtocol', '\v(_|:\+?)\m\zs' . a:keyword . '\ze' . '\(' . s:delimiter . '\|' . s:end . '\)')
 
-  " MD5-SHA: but do not highlight !MD5-SHA: (at the beginning of a suite)
+  " DES-MD5: but do not highlight !DES-MD5: (at the beginning of a suite)
   call matchadd('insecureSSLProtocol', s:begin . '[^!]\([0-9A-Za-z]\+[+-]\)\+\zs' . a:keyword . '\ze' . s:delimiter)
 
-  " Match :AES128-SHA: and :AES128+SHA: (in the middle of pattern)
+  " Match :AES128-MD5: and :AES128+MD5: (in the middle of pattern)
   call matchadd('insecureSSLProtocol', ':\([0-9A-Za-z]\+[+-]\)\+\zs' . a:keyword . '\ze' . s:delimiter . '\S')
 
-  " :AES-SHA or :AES-CBC-MD5 (at the end of suite)
-  " Do not allow alpha-numeric characters before s:end, to match '-SHA";' and others properly.
+  " :AES-MD5 or :AES-CBC-MD5 (at the end of suite)
+  " Do not allow alpha-numeric characters before s:end, to match '-MD5";' and others properly.
   call matchadd('insecureSSLProtocol', ':\([0-9A-Za-z]\+[+-]\)\+\zs' . a:keyword . '\ze' . '[^0-9A-Za-z]*' . s:end)
 
   " ^keyword, "keyword, 'keyword
-  " Checks for \S at the end, so "SHA: " is not highlighted in prose text.
+  " Checks for \S at the end, so 'MD5: ' is not highlighted in prose text.
   call matchadd('insecureSSLProtocol', s:begin . '\zs' . a:keyword . '\ze' . s:delimiter . '\S')
 endfunction
 
@@ -52,8 +52,10 @@ autocmd BufWinEnter * call s:genmatch('COMPLEMENTOFDEFAULT', '', '')
 autocmd BufWinEnter * call s:genmatch('ALL', '', '')
 autocmd BufWinEnter * call s:genmatch('COMPLEMENTOFALL', '', '')
 
-autocmd BufWinEnter * call s:genmatch('SHA', '\D', '') " Match SHA without matching SHA256+
-autocmd BufWinEnter * call s:genmatch('SHA1', '', '')
+" SHA ciphers are only used in HMAC with all known OpenSSL/ LibreSSL cipher suites and MAC
+" usage is still considered safe
+" autocmd BufWinEnter * call s:genmatch('SHA', '\D', '') " Match SHA without matching SHA256+
+" autocmd BufWinEnter * call s:genmatch('SHA1', '', '')
 autocmd BufWinEnter * call s:genmatch('MD5', '', '')
 autocmd BufWinEnter * call s:genmatch('RC2', '', '')
 autocmd BufWinEnter * call s:genmatch('RC4' , '', '')
