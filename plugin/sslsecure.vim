@@ -42,67 +42,71 @@ endfunction
 
 " Generate patterns to highlight insecure ciphers.
 " Reference: https://www.openssl.org/docs/man1.0.2/apps/ciphers.html
-autocmd BufWinEnter * call s:genmatch('SSLv3', '', '')
-autocmd BufWinEnter * call s:genmatch('SSLv2', '', '')
-autocmd BufWinEnter * call s:genmatch('HIGH', '', '')
-autocmd BufWinEnter * call s:genmatch('MEDIUM', '', '')
-autocmd BufWinEnter * call s:genmatch('LOW', '', '')
-autocmd BufWinEnter * call s:genmatch('DEFAULT', '', '')
-autocmd BufWinEnter * call s:genmatch('COMPLEMENTOFDEFAULT', '', '')
-autocmd BufWinEnter * call s:genmatch('ALL', '', '')
-autocmd BufWinEnter * call s:genmatch('COMPLEMENTOFALL', '', '')
-
-" SHA ciphers are only used in HMAC with all known OpenSSL/ LibreSSL cipher suites and MAC
-" usage is still considered safe
-" autocmd BufWinEnter * call s:genmatch('SHA', '\D', '') " Match SHA without matching SHA256+
-" autocmd BufWinEnter * call s:genmatch('SHA1', '', '')
-autocmd BufWinEnter * call s:genmatch('MD5', '', '')
-autocmd BufWinEnter * call s:genmatch('RC2', '', '')
-autocmd BufWinEnter * call s:genmatch('RC4' , '', '')
-autocmd BufWinEnter * call s:genmatch('3DES', '', '')
-autocmd BufWinEnter * call s:genmatch('DES', '', '')
-autocmd BufWinEnter * call s:genmatch('aDSS', '', '')
-autocmd BufWinEnter * call s:genmatch('DSS', '', 'a')
-autocmd BufWinEnter * call s:genmatch('PSK', '', '')
-autocmd BufWinEnter * call s:genmatch('IDEA', '', '')
-autocmd BufWinEnter * call s:genmatch('SEED', '', '')
-autocmd BufWinEnter * call s:genmatch('EXP[0-9A-Za-z]*', '', '')
-autocmd BufWinEnter * call s:genmatch('aGOST[0-9A-Za-z]*', '', '')
-autocmd BufWinEnter * call s:genmatch('kGOST[0-9A-Za-z]*', '', '')
-autocmd BufWinEnter * call s:genmatch('GOST[0-9A-Za-z]*', '', 'ak')
-autocmd BufWinEnter * call s:genmatch('[kae]\?FZA', '', '')
-autocmd BufWinEnter * call s:genmatch('ECB', '', '')
-autocmd BufWinEnter * call s:genmatch('[aes]\?NULL', '', '')
-
-" Anonymous cipher suites should never be used
-autocmd BufWinEnter * call s:genmatch('anon', '', '')       " Keyword used by e.g. rustls
-autocmd BufWinEnter * call s:genmatch('DH', '[^E]', 'ECa')  " Try to match DH without DHE, EDH, EECDH, etc.
-autocmd BufWinEnter * call s:genmatch('ECDH', '[^E]', 'EA') " Do not match EECDH, ECDHE
-autocmd BufWinEnter * call s:genmatch('ADH', '', '')
-autocmd BufWinEnter * call s:genmatch('kDHE', '', '')
-autocmd BufWinEnter * call s:genmatch('kEDH', '', '')
-autocmd BufWinEnter * call s:genmatch('kECDHE', '', '')
-autocmd BufWinEnter * call s:genmatch('kEECDH', '', '')
-autocmd BufWinEnter * call s:genmatch('AECDH', '', '[^E]')
-
-
+"
 " Protocol matching condition
 let s:protocol = '\v(TLS|tls|SSL|ssl)[A-Za-z0-9\._-]*([Pp]rotocol|[Oo]ption)\m.*'
 
-" Check for insecure protocols after keywords that could specify TLS/ SSL protocols
-autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv2')
-autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv3')
+" Put all autocmd statements into an augroup
+augroup sslsecure
+  autocmd!
 
-" Golang uses `MinVersion: tls.VersionSSL30`
-autocmd BufWinEnter * call matchadd('insecureSSLProtocol', 'tls\.\zsVersionSSL30')
+  autocmd BufWinEnter * call s:genmatch('SSLv3', '', '')
+  autocmd BufWinEnter * call s:genmatch('SSLv2', '', '')
+  autocmd BufWinEnter * call s:genmatch('HIGH', '', '')
+  autocmd BufWinEnter * call s:genmatch('MEDIUM', '', '')
+  autocmd BufWinEnter * call s:genmatch('LOW', '', '')
+  autocmd BufWinEnter * call s:genmatch('DEFAULT', '', '')
+  autocmd BufWinEnter * call s:genmatch('COMPLEMENTOFDEFAULT', '', '')
+  autocmd BufWinEnter * call s:genmatch('ALL', '', '')
+  autocmd BufWinEnter * call s:genmatch('COMPLEMENTOFALL', '', '')
 
-" HAProxy bind option
-autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '\zsforce-sslv3')
+  " SHA ciphers are only used in HMAC with all known OpenSSL/ LibreSSL cipher suites and MAC
+  " usage is still considered safe
+  " autocmd BufWinEnter * call s:genmatch('SHA', '\D', '') " Match SHA without matching SHA256+
+  " autocmd BufWinEnter * call s:genmatch('SHA1', '', '')
+  autocmd BufWinEnter * call s:genmatch('MD5', '', '')
+  autocmd BufWinEnter * call s:genmatch('RC2', '', '')
+  autocmd BufWinEnter * call s:genmatch('RC4' , '', '')
+  autocmd BufWinEnter * call s:genmatch('3DES', '', '')
+  autocmd BufWinEnter * call s:genmatch('DES', '', '')
+  autocmd BufWinEnter * call s:genmatch('aDSS', '', '')
+  autocmd BufWinEnter * call s:genmatch('DSS', '', 'a')
+  autocmd BufWinEnter * call s:genmatch('PSK', '', '')
+  autocmd BufWinEnter * call s:genmatch('IDEA', '', '')
+  autocmd BufWinEnter * call s:genmatch('SEED', '', '')
+  autocmd BufWinEnter * call s:genmatch('EXP[0-9A-Za-z]*', '', '')
+  autocmd BufWinEnter * call s:genmatch('aGOST[0-9A-Za-z]*', '', '')
+  autocmd BufWinEnter * call s:genmatch('kGOST[0-9A-Za-z]*', '', '')
+  autocmd BufWinEnter * call s:genmatch('GOST[0-9A-Za-z]*', '', 'ak')
+  autocmd BufWinEnter * call s:genmatch('[kae]\?FZA', '', '')
+  autocmd BufWinEnter * call s:genmatch('ECB', '', '')
+  autocmd BufWinEnter * call s:genmatch('[aes]\?NULL', '', '')
+
+  " Anonymous cipher suites should never be used
+  autocmd BufWinEnter * call s:genmatch('anon', '', '')       " Keyword used by e.g. rustls
+  autocmd BufWinEnter * call s:genmatch('DH', '[^E]', 'ECa')  " Try to match DH without DHE, EDH, EECDH, etc.
+  autocmd BufWinEnter * call s:genmatch('ECDH', '[^E]', 'EA') " Do not match EECDH, ECDHE
+  autocmd BufWinEnter * call s:genmatch('ADH', '', '')
+  autocmd BufWinEnter * call s:genmatch('kDHE', '', '')
+  autocmd BufWinEnter * call s:genmatch('kEDH', '', '')
+  autocmd BufWinEnter * call s:genmatch('kECDHE', '', '')
+  autocmd BufWinEnter * call s:genmatch('kEECDH', '', '')
+  autocmd BufWinEnter * call s:genmatch('AECDH', '', '[^E]')
+
+  " Check for insecure protocols after keywords that could specify TLS/ SSL protocols
+  autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv2')
+  autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cSSlv3')
+
+  " Golang uses `MinVersion: tls.VersionSSL30`
+  autocmd BufWinEnter * call matchadd('insecureSSLProtocol', 'tls\.\zsVersionSSL30')
+
+  " HAProxy bind option
+  autocmd BufWinEnter * call matchadd('insecureSSLProtocol', s:protocol . '\zsforce-sslv3')
 
 " TLSv1 is vulnerable to the BEAST attack. Should be disabled if possible.
 " TODO: TLSv1.0 is not matched yet
 " autocmd BufWinEnter * cal matchadd('insecureSSLProtocol', s:protocol . '[^!-]\zs\cTLSv1\ze[^\.]')
-
+augroup END
 
 " Highlight both groups as errors
 hi link insecureSSLCipher Error
