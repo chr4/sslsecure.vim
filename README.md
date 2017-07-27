@@ -103,3 +103,10 @@ Note that sslsecure.vim require Vim 7.3 or greater.
 ### Archlinux
 
 There's also an [AUR](https://aur.archlinux.org/packages/vim-sslsecure/) for Archlinux available, which is maintained by [Christian Rebischke](https://github.com/shibumi)
+
+
+## Authors
+
+Authors: Chris Aumann
+
+Contributors: Meredith Howard
