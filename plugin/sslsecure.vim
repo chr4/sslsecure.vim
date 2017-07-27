@@ -112,7 +112,7 @@ endfunction
 " Put all autocmd statements into an augroup
 augroup sslsecure
   autocmd!
-  autocmd BufWinEnter * call s:addmatches()
+  autocmd BufWinEnter,WinEnter * call s:addmatches()
 augroup END
 
 " Highlight both groups as errors
